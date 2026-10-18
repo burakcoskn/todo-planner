@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Görev Takip Uygulaması</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #dbeafe;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        h1 {
+            color: #1e293b;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 18px;
+        }
+        input {
+            width: 280px;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+        button {
+            padding: 12px 18px;
+            margin-left: 8px;
+            border: none;
+            border-radius: 10px;
+            background-color: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 28px auto 0;
+            max-width: 420px;
+        }
+
+        li {
+            background-color: #ffffff;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            color: #334155;
+            font-size: 16px;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+
+        /* Görev kartının iç düzeni */
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* Görev metni */
+        .task-text {
+            flex: 1;
+            overflow-wrap: anywhere;
+        }
+
+        /* Tamamlanan görev */
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        /* Tamamlandı butonu */
+        .complete-btn {
+            background-color: #16a34a;
+            color: white;
+            padding: 8px 10px;
+            margin-left: 0;
+            font-size: 13px;
+        }
+
+        /* Silme butonu */
+        .delete-btn {
+            background-color: #ef4444;
+            padding: 8px 10px;
+            margin-left: 0;
+            font-size: 13px;
+        }
+
+        /* Butonların üzerine gelince */
+        .complete-btn:hover {
+            background-color: #15803d;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc2626;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 420px;
+            margin: 24px auto;
+        }
+
+        .stat-card {
+            padding: 16px 8px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card span {
+            display: block;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .stat-card p {
+            margin: 6px 0 0;
+            font-size: 13px;
+        }
+
+        .total {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .completed-stat {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .remaining {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                gap: 6px;
+                padding: 0 8px;
+            }
+
+            .stat-card {
+                padding: 12px 4px;
+            }
+
+            .stat-card span {
+                font-size: 22px;
+            }
+
+            .stat-card p {
+                font-size: 11px;
+            }
+        }
+        .filters {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 20px auto;
+        }
+
+        .filter-btn {
+            background: #ffffff;
+            color: #475569;
+            border: 1px solid #dbe2ea;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #eff6ff;
+        }
+
+        .filter-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+
+        .search-container {
+            max-width: 420px;
+            margin: 18px auto;
+        }
+
+        #searchInput {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 16px;
+            border: 1px solid #d1dbe8;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #1e293b;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #searchInput:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        #searchInput::placeholder {
+            color: #94a3b8;
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: #64748b;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            box-shadow: none;
+            padding: 20px;
+        }
+
+        .date-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 420px;
+            margin: 12px auto;
+        }
+
+        .date-container label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .date-container input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font: inherit;
+            background: white;
+            color: #334155;
+        }
+
+        /* Ana başlık */
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* İki sütunlu ana düzen */
+        .app-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            text-align: left;
+            align-items: start;
+        }
+
+        /* Sol ve sağ paneller */
+        .task-panel,
+        .timeline-panel {
+            min-width: 0;
+            background: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .task-panel h2,
+        .timeline-panel h2 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+
+        /* Sol sütundaki elemanların genişlikleri */
+        .task-panel .stats,
+        .task-panel .date-container,
+        .task-panel .search-container,
+        .task-panel ul {
+            width: 100%;
+            max-width: none;
+            box-sizing: border-box;
+        }
+
+        .task-entry {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-entry input {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .task-entry button {
+            flex-shrink: 0;
+            margin-left: 0;
+        }
+
+        .task-panel .filters {
+            justify-content: flex-start;
+        }
+
+        .task-panel ul {
+            margin-top: 20px;
+        }
+
+        /* Zaman çizelgesi */
+        .timeline-description {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        #timeline {
+            position: relative;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #ffffff;
+            overscroll-behavior: contain;
+        }
+
+        /* Küçük ekranlarda sütunlar alt alta gelsin */
+        @media (max-width: 850px) {
+            .app-layout {
+                grid-template-columns: 1fr;
+                padding: 0 12px;
+            }
+
+            .task-panel,
+            .timeline-panel {
+                padding: 16px;
+            }
+        }
+        .timeline-slot {
+            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr);
+            height: 50px;
+            min-height: 50px;
+            box-sizing: border-box;
+        }
+
+        .timeline-time {
+            box-sizing: border-box;
+            height: 50px;
+            padding: 10px 8px;
+            color: #64748b;
+            font-size: 13px;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .timeline-drop-area {
+            box-sizing: border-box;
+            height: 50px;
+            min-height: 50px;
+            border-bottom: 1px solid #e2e8f0;
+            min-width: 0;
+        }
+        .timeline-drop-area {
+            border-bottom: 1px solid #e2e8f0;
+            min-width: 0;
+            transition: background-color 0.15s ease;
+        }
+
+        .timeline-drop-area:hover {
+            background-color: #eff6ff;
+        }
+
+        .task-panel li {
+            cursor: grab;
+        }
+
+        .task-panel li:active {
+            cursor: grabbing;
+        }
+        .timeline-drop-area {
+            min-height: 44px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .timeline-drop-area:hover {
+            background-color: #dbeafe;
+        }
+        
+        .timeline-drop-area.drag-over {
+            background-color: #dbeafe;
+            outline: 2px dashed #2563eb;
+            outline-offset: -2px;
+        }
+
+        .scheduled-task {
+            background-color: #bfdbfe;
+            color: #1e40af;
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin: 4px;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+        /* Zaman çizelgesindeki görev bloğu */
+        .scheduled-task {
+            position: absolute;
+            left: 68px;
+            right: 4px;
+            z-index: 5;
+            margin: 0;
+            touch-action: none;
+
+            box-sizing: border-box;
+            min-height: 44px;
+            padding: 8px 36px 8px 8px;
+            background: var(--task-color, #bfdbfe);
+            color: #1e40af;
+            border-radius: 7px;
+            font-size: 13px;
+            cursor: grab;
+            overflow: hidden;
+            user-select: none;
+        }
+        /* Görevi taşırken */
+        .scheduled-task:active {
+            cursor: grabbing;
+        }
+
+        /* Görev bloğunun üst ve alt kenarları */
+        .resize-handle {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            cursor: ns-resize;
+            z-index: 2;
+        }
+
+        .resize-top {
+            top: 0;
+        }
+
+        .resize-bottom {
+            bottom: 0;
+        }
+
+        /* Çizelgedeki silme düğmesi */
+        .timeline-delete-btn {
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            padding: 2px 6px;
+            margin: 0;
+            border-radius: 5px;
+            background: #ef4444;
+            color: white;
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .timeline-delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .timeline-drop-area.drag-over {
+            background: #dbeafe;
+        }
+        body {
+            overflow-y: auto;
+        }
+
+        #timeline {
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+
+<body>
+    <div class="app-header">
+        <h1>Görevlerim 🎯</h1>
+        <p>Gününü planla, görevlerini tamamla.</p>
+    </div>
+
+    <div class="app-layout">
+        <section class="task-panel">
+            <h2>Görevler</h2>
+
+            <div class="stats">
+                <div class="stat-card total">
+                    <span id="totalTasks">0</span>
+                    <p>Toplam</p>
+                </div>
+                <div class="stat-card completed-stat">
+                    <span id="completedTasks">0</span>
+                    <p>Tamamlanan</p>
+                </div>
+                <div class="stat-card remaining">
+                    <span id="remainingTasks">0</span>
+                    <p>Kalan</p>
+                </div>
+            </div>
+
+            <div class="task-entry">
+                <input
+                    type="text"
+                    id="taskInput"
+                    placeholder="Örn: 30 dk kitap oku"
+                    onkeydown="if (event.key === 'Enter') addTask()"
+                >
+                <button onclick="addTask()">+ Ekle</button>
+            </div>
+
+            <div class="date-container">
+                <label for="taskDate">Görev tarihi</label>
+                <input type="date" id="taskDate">
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Tümü</button>
+                <button class="filter-btn" data-filter="active">Devam Edenler</button>
+                <button class="filter-btn" data-filter="completed">Tamamlananlar</button>
+            </div>
+
+            <div class="search-container">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Görevlerde ara..."
+                >
+            </div>
+
+            <ul id="taskList"></ul>
+        </section>
+
+        <section class="timeline-panel">
+            <h2>Zaman Çizelgesi</h2>
+            <p class="timeline-description">
+                Görevlerini günün saatlerine göre planla.
+            </p>
+            <div id="timeline"></div>
+        </section>
+    </div>
+
+    <script>
+        // Kaydedilen görevleri tarayıcıdan oku
+        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        let currentFilter = "all";
+        let searchQuery = "";
+
+        // Görev listesini tarayıcıya kaydet
+        function saveTasks() {
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+        
+        // Filtre butonlarına tıklama
+        document.querySelectorAll(".filter-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                currentFilter = button.dataset.filter;
+
+                document.querySelectorAll(".filter-btn").forEach(function (btn) {
+                    btn.classList.remove("active");
+                });
+
+                button.classList.add("active");
+
+                renderTasks();
+            });
+        });
+
+        document.getElementById("searchInput").addEventListener("input", function () {
+            searchQuery = this.value.trim();
+            renderTasks();
+        });
+
+        function getLocalDateString(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        }
+
+        document.getElementById("taskDate").value = getLocalDateString();
+        let selectedDate = getLocalDateString();
+
+        document.getElementById("taskDate").addEventListener("change", function () {
+            selectedDate = this.value;
+
+            renderTasks();
+            renderTimeline();
+        });
+        
+
+function timeToMinutes(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+}
+
+function minutesToTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return String(hours).padStart(2, "0") + ":" +
+           String(mins).padStart(2, "0");
+}
+
+
+function timeToMinutes(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+}
+
+function minutesToTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return String(hours).padStart(2, "0") + ":" +
+           String(mins).padStart(2, "0");
+}
+
+function hasTimeConflict(currentTask, newStart, newEnd) {
+    return tasks.some(function (otherTask) {
+        if (otherTask === currentTask) return false;
+        if (otherTask.date !== selectedDate) return false;
+        if (!otherTask.startTime || !otherTask.endTime) return false;
+
+        const otherStart = timeToMinutes(otherTask.startTime);
+        const otherEnd = timeToMinutes(otherTask.endTime);
+
+        return newStart < otherEnd && newEnd > otherStart;
+    });
+}
+
+function renderTimeline() {
+    const timeline = document.getElementById("timeline");
+    timeline.innerHTML = "";
+
+    // Saat alanlarını oluştur.
+    for (let minutes = 6 * 60; minutes < 24 * 60; minutes += 30) {
+        const time = minutesToTime(minutes);
+        const row = document.createElement("div");
+        row.className = "timeline-slot";
+
+        const label = document.createElement("div");
+        label.className = "timeline-time";
+        label.textContent = time;
+
+        const area = document.createElement("div");
+        area.className = "timeline-drop-area";
+        area.dataset.time = time;
+
+        area.addEventListener("dragover", function (event) {
+            event.preventDefault();
+        });
+
+        area.addEventListener("drop", function (event) {
+            event.preventDefault();
+
+            const indexText = event.dataTransfer.getData("taskIndex");
+            if (indexText === "") return;
+
+            const task = tasks[Number(indexText)];
+            if (!task) return;
+
+            // Görev bırakıldığı günün planına ait olur.
+            task.date = selectedDate;
+
+            const oldStart = task.startTime
+                ? timeToMinutes(task.startTime)
+                : null;
+            const oldEnd = task.endTime
+                ? timeToMinutes(task.endTime)
+                : null;
+
+            const duration =
+                oldStart !== null && oldEnd !== null
+                    ? oldEnd - oldStart
+                    : 30;
+
+            const newStart = minutes;
+            const newEnd = Math.min(newStart + duration, 24 * 60);
+
+            if (hasTimeConflict(task, newStart, newEnd)) {
+                alert("Bu saat aralığında başka bir görev var.");
+                return;
+            }
+
+            task.startTime = minutesToTime(newStart);
+            task.endTime = minutesToTime(newEnd);
+
+            saveTasks();
+            renderTasks();
+            renderTimeline();
+        });
+
+        row.appendChild(label);
+        row.appendChild(area);
+        timeline.appendChild(row);
+    }
+
+    // Seçili tarihteki planlanmış görevleri göster.
+    tasks.forEach(function (task, index) {
+        if (
+            task.date !== selectedDate ||
+            !task.startTime ||
+            !task.endTime
+        ) {
+            return;
+        }
+
+        const start = timeToMinutes(task.startTime);
+        const end = timeToMinutes(task.endTime);
+        if (end <= start) return;
+
+        const block = document.createElement("div");
+        block.className = "scheduled-task";
+        const pastelColors = [
+            "#bfdbfe", // Açık mavi
+            "#ddd6fe", // Lavanta
+            "#bbf7d0", // Mint yeşili
+            "#fef3c7", // Açık sarı
+            "#fecdd3", // Pastel pembe
+            "#fed7aa", // Şeftali
+            "#a5f3fc", // Açık turkuaz
+            "#e9d5ff"  // Açık mor
+        ];
+
+        // Göreve daha önce renk atanmadıysa rastgele seç.
+        if (!task.color) {
+            task.color = pastelColors[
+                Math.floor(Math.random() * pastelColors.length)
+            ];
+        }
+
+        block.style.setProperty("--task-color", task.color);
+        block.draggable = true;
+        block.textContent = task.text;
+        block.style.height = ((end - start) / 30 * 50 - 4) + "px";
+        block.style.top = ((start - 360) / 30 * 50 + 2) + "px";
+
+        block.addEventListener("dragstart", function (event) {
+            event.dataTransfer.setData("taskIndex", String(index));
+            event.dataTransfer.effectAllowed = "move";
+        });
+
+        // Üst kenar: başlangıç saatini değiştir.
+        const topHandle = document.createElement("div");
+        topHandle.className = "resize-handle resize-top";
+
+        topHandle.addEventListener("pointerdown", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const initialY = event.clientY;
+            const originalStart = timeToMinutes(task.startTime);
+            const originalEnd = timeToMinutes(task.endTime);
+
+            function resize(moveEvent) {
+                const steps = Math.round(
+                    (moveEvent.clientY - initialY) / 44
+                );
+
+                const newStart = Math.max(
+                    360,
+                    Math.min(originalStart + steps * 30, originalEnd - 30)
+                );
+
+                if (!hasTimeConflict(task, newStart, originalEnd)) {
+                    task.startTime = minutesToTime(newStart);
+                    block.style.height =
+                        ((originalEnd - newStart) / 30 * 50 - 4) + "px";
+
+                    block.style.top =
+                        ((newStart - 360) / 30 * 50 + 2) + "px";
+                }
+            }
+
+            function stopResize() {
+                document.removeEventListener("pointermove", resize);
+                document.removeEventListener("pointerup", stopResize);
+                saveTasks();
+                renderTasks();
+                renderTimeline();
+            }
+
+            document.addEventListener("pointermove", resize);
+            document.addEventListener("pointerup", stopResize);
+        });
+
+        // Alt kenar: bitiş saatini değiştir.
+        const bottomHandle = document.createElement("div");
+        bottomHandle.className = "resize-handle resize-bottom";
+
+        bottomHandle.addEventListener("pointerdown", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const initialY = event.clientY;
+            const originalStart = timeToMinutes(task.startTime);
+            const originalEnd = timeToMinutes(task.endTime);
+
+            function resize(moveEvent) {
+                const steps = Math.round(
+                    (moveEvent.clientY - initialY) / 44
+                );
+
+                const newEnd = Math.max(
+                    originalStart + 30,
+                    Math.min(originalEnd + steps * 30, 1440)
+                );
+
+                if (!hasTimeConflict(task, originalStart, newEnd)) {
+                    task.endTime = minutesToTime(newEnd);
+                    block.style.height =
+                        ((newEnd - originalStart) / 30 * 50 - 4) + "px";
+                }
+            }
+
+            function stopResize() {
+                document.removeEventListener("pointermove", resize);
+                document.removeEventListener("pointerup", stopResize);
+                saveTasks();
+                renderTasks();
+                renderTimeline();
+            }
+
+            document.addEventListener("pointermove", resize);
+            document.addEventListener("pointerup", stopResize);
+        });
+
+        // Silme düğmesi.
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "timeline-delete-btn";
+        deleteButton.textContent = "×";
+        deleteButton.title = "Görevi sil";
+
+        deleteButton.addEventListener("pointerdown", function (event) {
+            event.stopPropagation();
+        });
+
+        deleteButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+
+            if (confirm("Bu görevi tamamen silmek istiyor musun?")) {
+                tasks.splice(index, 1);
+                saveTasks();
+                renderTasks();
+                renderTimeline();
+            }
+        });
+
+        block.appendChild(topHandle);
+        block.appendChild(bottomHandle);
+        block.appendChild(deleteButton);
+
+        const targetArea = timeline.querySelector(
+            '[data-time="' + task.startTime + '"]'
+        );
+
+        if (targetArea) {
+            targetArea.appendChild(block);
+        }
+    });
+}
+document.addEventListener("dragover", function (event) {
+    const edgeSize = 80;
+    const scrollSpeed = 3;
+
+    if (event.clientY < edgeSize) {
+        window.scrollBy(0, -scrollSpeed);
+    } else if (event.clientY > window.innerHeight - edgeSize) {
+        window.scrollBy(0, scrollSpeed);
+    }
+});
+
+        // Görevleri ekranda oluştur
+        function renderTasks() {
+            const taskList = document.getElementById("taskList");
+            taskList.innerHTML = "";
+            
+            let filteredTasks = tasks.filter(function (task) {
+                return task.date === selectedDate;
+            });
+
+            if (currentFilter === "active") {
+                filteredTasks = filteredTasks.filter(function (task) {
+                    return !task.completed;
+                });
+            } else if (currentFilter === "completed") {
+                filteredTasks = filteredTasks.filter(function (task) {
+                    return task.completed;
+                });
+            }
+
+            filteredTasks = filteredTasks.filter(function (task) {
+                return task.text.toLowerCase().includes(searchQuery.toLowerCase());
+            });
+
+            filteredTasks.forEach(function (item, index) {
+                const realIndex = tasks.indexOf(item);
+                const task = document.createElement("li");
+
+                task.draggable = true;
+
+                task.addEventListener("dragstart", function (event) {
+                    const realIndex = tasks.indexOf(item);
+                    event.dataTransfer.setData("taskIndex", String(realIndex));
+                    event.dataTransfer.effectAllowed = "move";
+                });
+
+                const text = document.createElement("span");
+                text.textContent = item.text;
+                text.className = "task-text";
+
+                if (item.completed) {
+                    text.classList.add("completed");
+                }
+
+                const completeButton = document.createElement("button");
+                completeButton.textContent = item.completed
+                    ? "↩ Geri al"
+                    : "✓ Tamamlandı";
+                completeButton.className = "complete-btn";
+
+                completeButton.onclick = function () {
+                    tasks[realIndex].completed = !tasks[realIndex].completed;
+                    saveTasks();
+                    renderTasks();
+                };
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Sil";
+                deleteButton.className = "delete-btn";
+
+                deleteButton.onclick = function () {
+                    tasks.splice(realIndex, 1);
+                    saveTasks();
+                    renderTasks();
+                };
+
+                task.appendChild(text);
+                task.appendChild(completeButton);
+                task.appendChild(deleteButton);
+
+                taskList.appendChild(task);
+            });
+            
+            if (filteredTasks.length === 0) {
+                const emptyMessage = document.createElement("li");
+                emptyMessage.className = "empty-message";
+
+                if (searchQuery !== "") {
+                    emptyMessage.textContent = "Aramanla eşleşen görev bulunamadı.";
+                } else if (tasks.length === 0) {
+                    emptyMessage.textContent = "Henüz görevin yok. İlk görevini ekle!";
+                } else if (currentFilter === "active") {
+                    emptyMessage.textContent = "Devam eden görev yok.";
+                } else if (currentFilter === "completed") {
+                    emptyMessage.textContent = "Henüz tamamlanan görev yok.";
+                }
+                taskList.appendChild(emptyMessage);
+            }
+            updateStats();
+        }
+        
+        function updateStats() {
+            const dailyTasks = tasks.filter(function (task) {
+                return task.date === selectedDate;
+            });
+
+            const total = dailyTasks.length;
+
+            const completed = dailyTasks.filter(function (task) {
+                return task.completed;
+            }).length;
+
+            const remaining = total - completed;
+
+            document.getElementById("totalTasks").textContent = total;
+            document.getElementById("completedTasks").textContent = completed;
+            document.getElementById("remainingTasks").textContent = remaining;
+        }
+
+
+        // Yeni görev ekle
+        function addTask() {
+            const input = document.getElementById("taskInput");
+            const taskText = input.value.trim();
+
+            if (taskText === "") {
+                alert("Lütfen bir görev yaz!");
+                return;
+            }
+
+        const taskDate = document.getElementById("taskDate").value;
+
+        tasks.push({
+            text: taskText,
+            completed: false,
+            date: taskDate,
+            startTime: null,
+            endTime: null
+        });
+
+            saveTasks();
+            renderTasks();
+
+            input.value = "";
+            input.focus();
+        }
+
+        // Sayfa açıldığında kayıtlı görevleri göster
+        renderTasks();
+        renderTimeline();
+    </script>
+
+</body>
+</html>
